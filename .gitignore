@@ -1,0 +1,25 @@
+# Données audio : jamais dans git (règle du projet)
+data/
+*.wav
+*.WAV
+*.mp3
+*.flac
+*.aif
+*.aiff
+*.ogg
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# Sorties locales
+out/
+*.sqlite
+*.db

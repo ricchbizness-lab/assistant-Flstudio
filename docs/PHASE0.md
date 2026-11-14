@@ -1,6 +1,6 @@
 # Music Engineering Lab : Phase 0 (audit et conception)
 
-Statut : **à valider**. Aucun code n'a été écrit.
+Statut : **validée le 14/11/2026 pour les étapes 0 à 3 uniquement**, sous deux conditions : (a) seuils numériques des tests de l’étape 3 figés avant implémentation ; (b) attribution de l’écrêtage du bus reportée après le test d’écoute à l’aveugle de l’étape 3. Les étapes 4 à 6 restent à valider.
 Légende des affirmations : **[V]** vérifié dans une doc (source citée) · **[S]** supposé · **[NT]** non testé, à tester sur ta machine.
 
 ---
