@@ -230,6 +230,13 @@ Chaque étape fait 1 à 3 sessions courtes et se termine par un critère binaire
 - Sortie : `mixlab analyze mix.wav` produit un JSON de mesures.
 *Critère* : tests verts et JSON relu par toi sur un de tes mix, avec ton avis « cohérent / pas cohérent ».
 
+*Résultat (15/11/2026)* :
+- Tests verts : largeur (mono, indépendant, opposition de phase, un seul canal, panoramique, profil par bande), dynamique (crête d'un sinus, crête par bande, compression), pente spectrale (rose 0, blanc +3 dB/octave), mud, normalisation du loudness, sections (3 parties, saut de niveau seul, signal stationnaire, petit changement ignoré), rôles et `roles.yaml`.
+- **Critère corrigé (mud)** : la fourchette « +4 à +6 dB » était une estimation fausse de la Phase 0. Les flancs de la cloche relèvent aussi les bandes de la pente (+0,8 dB à 125 Hz, +1,3 dB à 800 Hz). La valeur exacte, calculée depuis la réponse du filtre, est 3,73 dB ; la mesure donne 3,66 à 3,82 dB selon le tirage du bruit. Le test compare désormais à cette prédiction (±0,3 dB), sans modification de la mesure.
+- Comparaison aux références : chaque spectre est ramené à 0 LUFS intégré avant comparaison (demande de l'utilisateur). Test : le même signal 10 dB plus fort donne un écart nul (< 0,01 dB).
+- Sections sur musique réelle : sans vérité terrain. La durée minimale par défaut est passée de 4 à 8 s après essai sur MONEY et MARACANA (16 sections trop courtes avec 4 s). À valider contre la structure réelle d'un morceau.
+- **En attente** : l'avis de l'utilisateur sur l'analyse d'un de ses mix (extrait attendu avant l'étape 3).
+
 **Étape 3 (3 sessions) : masquage par paire de stems.**
 - Sinus 1 kHz -20 dB + sinus 1,1 kHz -40 dB → le second est masqué.
 - Sinus 1 kHz -20 dB + sinus 4 kHz -40 dB → pas de masquage.

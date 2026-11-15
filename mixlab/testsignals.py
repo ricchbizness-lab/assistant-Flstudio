@@ -107,6 +107,28 @@ def with_fades(x: np.ndarray, fs: int = DEFAULT_FS, ms: float = 10.0) -> np.ndar
     return x * (env[:, None] if x.ndim == 2 else env)
 
 
+def peaking_sos(fs: int, f0: float, gain_db: float, q: float) -> np.ndarray:
+    """Filtre en cloche (RBJ Audio EQ Cookbook), comme une bande d'EQ paramétrique."""
+    a = 10 ** (gain_db / 40.0)
+    w0 = 2 * np.pi * f0 / fs
+    alpha = np.sin(w0) / (2 * q)
+    b = np.array([1 + alpha * a, -2 * np.cos(w0), 1 - alpha * a])
+    den = np.array([1 + alpha / a, -2 * np.cos(w0), 1 - alpha / a])
+    return np.concatenate([b / den[0], den / den[0]])[None, :]
+
+
+def peaking_eq(x: np.ndarray, fs: int, f0: float, gain_db: float, q: float) -> np.ndarray:
+    from scipy.signal import sosfilt
+
+    return sosfilt(peaking_sos(fs, f0, gain_db, q), x, axis=0)
+
+
+def lowpassed_noise(cutoff: float, rms_dbfs: float = -20.0, dur: float = 1.0, fs: int = DEFAULT_FS,
+                    seed: int = 0) -> np.ndarray:
+    """Bruit rose limité à 20 Hz - cutoff."""
+    return pink_noise(rms_dbfs, dur, fs, seed, f_lo=20.0, f_hi=cutoff)
+
+
 def stereo(left: np.ndarray, right: np.ndarray) -> np.ndarray:
     if left.shape != right.shape or left.ndim != 1:
         raise ValueError("deux signaux mono de même longueur attendus")

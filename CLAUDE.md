@@ -12,6 +12,7 @@
 ## Avancement
 - Phase 0 validée pour les étapes 0 à 3 uniquement.
 - Étape 0 : validée par l'utilisateur.
-- Étape 1 : faite, en attente de validation. Loudness (pas de 10 ms pour M/S, grille 100 ms pour I), true-peak x4, spectres tiers d'octave et Bark, cas EBU reconstruits, comparatif oracles (`tools/compare_oracles.py`, oracle Master = `tools/master_oracle.cpp`). Reste : comparatif sur un 3e morceau réel.
+- Étape 1 : validée. Loudness (pas de 10 ms pour M/S, grille 100 ms pour I), true-peak x4, spectres tiers d'octave et Bark, cas EBU reconstruits, comparatif oracles (`tools/compare_oracles.py`, oracle Master = `tools/master_oracle.cpp`). Le 3e morceau réel n'est pas bloquant.
+- Étape 2 : faite, en attente de validation (`mixlab analyze`, `mixlab roles`). Bandes larges dans `mixlab/bands.py` ; mud et comparaison aux références dans `measures/balance.py` (normalisation du loudness obligatoire avant toute comparaison spectrale) ; sections par contraste spectral (`sections.py`, défaut 8 s minimum). Reste : avis de l'utilisateur sur un de ses mix.
 - Données audio : la release privée est abandonnée. L'utilisateur envoie un extrait de 20-30 s (stems + Master) dans le chat avant l'étape 3. Références dans `data/refs/` (16 bits / 48 kHz) ; exports à venir en 24 bits.
 - Rapports : toujours afficher fréquence et profondeur de chaque fichier (`AudioInfo.label`).

@@ -1,0 +1,13 @@
+# Copie ce fichier en « roles.yaml » dans le dossier des stems.
+# Il ne sert que pour les pistes sans préfixe de rôle (KICK, 808, SNARE, HAT, PERC,
+# LEAD, KEYS, PAD, FX, VOX, BUS, SEND, MASTER) et il est prioritaire sur le préfixe.
+#
+# Clé : motif sur le nom du fichier sans extension (* = n'importe quels caractères,
+# majuscules et minuscules confondues). Valeur : le rôle.
+#
+# Vérification : mixlab roles <dossier des stems>
+
+roles:
+  "*chords*": KEYS
+  "*Insert 7": PERC
+  "*guitare*": KEYS

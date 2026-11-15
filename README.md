@@ -32,6 +32,20 @@ Mesures de base (format, LUFS intégré, LRA, momentané et court terme max, tru
 .venv\Scripts\python -m mixlab measure "C:\chemin\vers\mix.wav" --json data\out
 ```
 
+Analyse d'un mix stéréo : loudness, dynamique, largeur stéréo globale et par bande, pente spectrale, mud, sections, et comparaison à tes références (spectres ramenés au même loudness avant comparaison) :
+
+```bash
+.venv\Scripts\python -m mixlab analyze "C:\chemin\vers\mix.wav" --ref "ref1.wav" --ref "ref2.wav" --json data\out\mix.json
+```
+
+Options du découpage : `--sections 15.5,47,79` impose les frontières ; `--min-section 8` (s) et `--section-threshold 3` (dB) règlent la détection automatique.
+
+Rôle détecté pour chaque stem d'un dossier :
+
+```bash
+.venv\Scripts\python -m mixlab roles "C:\chemin\vers\stems"
+```
+
 Comparatif avec les oracles (ffmpeg, pyloudnorm, code de RicchBeatz Master s'il est cloné à côté) :
 
 ```bash
@@ -43,4 +57,4 @@ Tout ce qui est audio va dans `data/`, ignoré par git.
 ## Nommage des pistes mixer (avant export « Split mixer tracks »)
 
 Préfixe de rôle en majuscules, puis le nom libre : `KICK`, `808`, `SNARE`, `HAT`, `PERC`, `LEAD`, `KEYS`, `PAD`, `FX`, `VOX`, `BUS`, `SEND`.
-Exemple : `808 slide`, `BUS drums`. Les pistes sans préfixe sont décrites dans `roles.yaml` (à partir de l'étape 2).
+Exemple : `808 slide`, `BUS drums`. Les pistes sans préfixe sont décrites dans un `roles.yaml` placé dans le dossier des stems (modèle : `roles.example.yaml`).
