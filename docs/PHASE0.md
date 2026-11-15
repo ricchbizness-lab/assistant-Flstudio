@@ -216,6 +216,12 @@ Chaque étape fait 1 à 3 sessions courtes et se termine par un critère binaire
 - Spectre : un sinus tombe dans la bonne bande 1/3 d'octave et la bonne bande Bark ; le bruit rose donne une courbe plate (±0,5 dB) en 1/3 d'octave.
 *Critère* : `pytest tests/measures` vert, et un tableau comparatif ffmpeg/MasterTest/mixlab sur 3 vrais exports.
 
+*Résultat (15/11/2026)* :
+- Les fichiers EBU n'ont pas pu être téléchargés (HTTP 403). Les cas d'essai ont été reconstruits depuis le texte des normes (`mixlab/ebu_cases.py`) : Tech 3341 cas 1-5, 9, 10, 12, 13, 15-23 et Tech 3342 cas 1-4, tous dans la tolérance de la norme (`tests/test_ebu_compliance.py`).
+- Changement par rapport à la conception : momentané et court terme calculés au pas de 10 ms (un pas de 100 ms donnait -23,45 LUFS au cas 13, hors tolérance). L'intégré garde la grille de 100 ms de BS.1770.
+- Oracles (`tools/compare_oracles.py`, tableau dans `docs/validation/step1-oracles.md`) : aucun écart hors tolérance avec ffmpeg et pyloudnorm sur 22 fichiers. Le code de Master (`Dsp.h`) est compilé sans JUCE au lieu de `MasterTest`, qui ne sait pas mesurer un fichier seul.
+- **Partiel** : 2 morceaux réels au lieu de 3 (deux références reçues ; tes exports arrivent avant l'étape 3). À compléter avec le premier export.
+
 **Étape 2 (2-3 sessions) : analyse du mix stéréo.**
 - Largeur : L = R → corrélation 1, S/M = -∞ ; bruits indépendants → corrélation ≈ 0 ; L = -R → -1 et alerte mono.
 - Mud : bruit rose + bosse +6 dB à 300 Hz (Q 1) → indicateur de mud +4 à +6 dB par rapport au bruit rose seul ; aucun déclenchement sur bruit rose seul.

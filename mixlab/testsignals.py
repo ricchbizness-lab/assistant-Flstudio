@@ -94,6 +94,19 @@ def pink_noise(rms_dbfs: float = -20.0, dur: float = 1.0, fs: int = DEFAULT_FS,
     return _normalize_rms(_shaped_noise(_n(dur, fs), fs, seed, 1.0, f_lo, min(f_hi, fs / 2)), rms_dbfs)
 
 
+def with_fades(x: np.ndarray, fs: int = DEFAULT_FS, ms: float = 10.0) -> np.ndarray:
+    """Fondus d'entrée et de sortie en sinus carré. Sans eux, un signal qui démarre
+    brutalement produit un vrai dépassement inter-échantillons au premier échantillon
+    (environ +0,1 dB sur le sinus à fs/4), qui fausserait les tests de true-peak."""
+    n = int(round(fs * ms / 1000.0))
+    if n == 0 or 2 * n > x.shape[0]:
+        return x.copy()
+    ramp = np.sin(np.linspace(0.0, np.pi / 2, n)) ** 2
+    env = np.ones(x.shape[0])
+    env[:n], env[-n:] = ramp, ramp[::-1]
+    return x * (env[:, None] if x.ndim == 2 else env)
+
+
 def stereo(left: np.ndarray, right: np.ndarray) -> np.ndarray:
     if left.shape != right.shape or left.ndim != 1:
         raise ValueError("deux signaux mono de même longueur attendus")

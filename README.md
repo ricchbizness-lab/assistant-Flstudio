@@ -26,10 +26,16 @@ Copie de travail vérifiée d'un fichier (l'original n'est ouvert qu'en lecture)
 .venv\Scripts\python -m mixlab copy "C:\chemin\vers\mix.wav"
 ```
 
-Données de test depuis la release privée `test-data-v1` (nécessite un jeton GitHub en lecture dans `GITHUB_TOKEN`) :
+Mesures de base (format, LUFS intégré, LRA, momentané et court terme max, true-peak, PLR, spectre en tiers d'octave), sur une copie de travail :
 
 ```bash
-.venv\Scripts\python -m mixlab fetch-test-data
+.venv\Scripts\python -m mixlab measure "C:\chemin\vers\mix.wav" --json data\out
+```
+
+Comparatif avec les oracles (ffmpeg, pyloudnorm, code de RicchBeatz Master s'il est cloné à côté) :
+
+```bash
+.venv\Scripts\python tools\compare_oracles.py
 ```
 
 Tout ce qui est audio va dans `data/`, ignoré par git.

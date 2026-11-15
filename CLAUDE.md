@@ -11,4 +11,7 @@
 
 ## Avancement
 - Phase 0 validée pour les étapes 0 à 3 uniquement.
-- Étape 0 : faite (copie de travail, générateur de signaux, téléchargement des données de test, 22 tests).
+- Étape 0 : validée par l'utilisateur.
+- Étape 1 : faite, en attente de validation. Loudness (pas de 10 ms pour M/S, grille 100 ms pour I), true-peak x4, spectres tiers d'octave et Bark, cas EBU reconstruits, comparatif oracles (`tools/compare_oracles.py`, oracle Master = `tools/master_oracle.cpp`). Reste : comparatif sur un 3e morceau réel.
+- Données audio : la release privée est abandonnée. L'utilisateur envoie un extrait de 20-30 s (stems + Master) dans le chat avant l'étape 3. Références dans `data/refs/` (16 bits / 48 kHz) ; exports à venir en 24 bits.
+- Rapports : toujours afficher fréquence et profondeur de chaque fichier (`AudioInfo.label`).
