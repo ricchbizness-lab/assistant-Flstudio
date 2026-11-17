@@ -95,3 +95,27 @@ Avec un masqueur intermittent (snare, snap), le SMR médian sur toutes les trame
 cible devient très grand (+125 dB et plus) car le masqueur est absent la plupart du
 temps. Ajout de deux indicateurs d'affichage : part du temps de la cible où le masqueur
 joue, et SMR médian sur ces trames seulement. Le score de classement reste celui du §1.
+
+### A3 (17/11/2026) : résultat du test d'écoute à l'aveugle — ÉCHEC selon le critère §3
+
+Notes de l'utilisateur (prises avant les résultats) : (1) une des basses joue trop fort ;
+(2) comparé aux références de Nayfun, la prod sonne « trop fort pour rien », moins propre
+et moins lisse (gain staging ou compression soupçonnés). Le reste est jugé correct.
+
+Top 3 de l'outil : SNAP SPICY → SNAP WATCH ; SNARE MANY → SNAP WATCH ; JERK 808 KID → JERK BASS COSTA.
+
+Correspondances : 1 (le conflit n°3 contient des basses, note 1, correspondance par groupe).
+La note 2 n'est pas un conflit de masquage. Critère : au moins 2 sur 3. **Échec.**
+
+Enseignements :
+- Le score classe en tête une couche quasi inaudible (SNAP WATCH, -40,8 LUFS) : il ne tient
+  pas compte de l'importance de la cible dans le mix.
+- Les problèmes perçus relèvent surtout du niveau des éléments et de la dynamique (gain
+  staging, écrasement par le bus Master), que le masquage seul ne capte pas. Mesures
+  factuelles sur l'extrait : somme des stems à +7,1 dBFS de crête (facteur de crête 13,9 dB),
+  Master à 0,0 dBFS (6,4 dB), soit 7,5 dB de crête retirés pour +0,6 LU de loudness ; quatre
+  basses plus fortes que le kick.
+
+Suite prévue (§3) : recalibrage des paramètres du §1 (pondération du score par l'importance
+de la cible), seuils du §2 inchangés, puis nouveau test sur un autre extrait. Le choix de
+la suite est soumis à l'utilisateur.
