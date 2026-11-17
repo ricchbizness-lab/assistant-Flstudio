@@ -67,4 +67,31 @@ Niveaux en crête (dBFS). Les SMR prévus sont calculés avec les paramètres du
 
 ## Annexes (corrections ultérieures)
 
-Aucune.
+### A1 (17/11/2026) : prédictions de la colonne « Prévu » vs mesures — aucun seuil modifié
+
+Les 10 tests passent avec les seuils et paramètres d'origine. Valeurs mesurées :
+
+| # | Prévu (papier) | Mesuré |
+|---|---|---|
+| T1 | SMR -9,3 dB | ratio 1,00, SMR médian -14,5 dB |
+| T2 | +64 dB | ratio 0,00, +64,0 dB |
+| T3a | -6,2 dB | ratio 1,00, -15,8 dB |
+| T3b | +9,6 dB | ratio 0,00 dans la bande du sinus |
+| T3c | 15,8 dB | 12,4 dB (seuil 8) |
+| T4a / T4b | | ratio bande 0 : 0,04 / 1,00 ; corrélation des enveloppes : -0,24 / +0,93 |
+| T5a | | ratio 0,00 |
+| T6 | | ratio 0,00, SMR +17,6 dB |
+
+Écart T1/T3a : les prédictions supposaient des bandes étanches. Avec la fenêtre courte
+(23 ms) au-dessus de 510 Hz, le lobe principal de Hann couvre environ ±86 Hz : un sinus
+à 1100 Hz, à 20 Hz de la frontière 1080 Hz, dépose 47 % de son énergie dans la bande du
+masqueur. **Limite du modèle** : près des frontières de bande, le masquage entre éléments
+voisins est surestimé. Le SMR médian de T3b (-3,4 dB) inclut ces cases de débordement
+(hors de la bande du sinus) ; le ratio dans la bande du sinus reste 0,00.
+
+### A2 (17/11/2026) : indicateurs d'affichage ajoutés (le score figé n'est pas modifié)
+
+Avec un masqueur intermittent (snare, snap), le SMR médian sur toutes les trames de la
+cible devient très grand (+125 dB et plus) car le masqueur est absent la plupart du
+temps. Ajout de deux indicateurs d'affichage : part du temps de la cible où le masqueur
+joue, et SMR médian sur ces trames seulement. Le score de classement reste celui du §1.

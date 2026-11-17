@@ -46,6 +46,13 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("folder")
     r.add_argument("--roles", help="Fichier roles.yaml (défaut : <dossier>/roles.yaml)")
 
+    st = sub.add_parser("stems", help="Masquage entre stems (export Split mixer tracks)")
+    st.add_argument("folder")
+    st.add_argument("--roles", help="Fichier roles.yaml (défaut : <dossier>/roles.yaml)")
+    st.add_argument("--exclude", action="append", default=[], help="Nom de fichier à ignorer (répétable)")
+    st.add_argument("--top", type=int, default=3, help="Nombre de conflits affichés (défaut 3)")
+    st.add_argument("--json", help="Fichier JSON de sortie")
+
     args = p.parse_args(argv)
     try:
         if args.cmd == "fetch-test-data":
@@ -58,6 +65,8 @@ def main(argv: list[str] | None = None) -> int:
             _measure(args.files, args.work, args.json)
         elif args.cmd == "analyze":
             _analyze(args)
+        elif args.cmd == "stems":
+            _stems(args)
         elif args.cmd == "roles":
             _roles(args.folder, args.roles)
     except (FetchError, WorkCopyError, RolesError, OSError, ValueError) as e:
@@ -104,6 +113,19 @@ def _analyze(args) -> None:
     if args.json:
         Path(args.json).parent.mkdir(parents=True, exist_ok=True)
         Path(args.json).write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _stems(args) -> None:
+    import json
+    from pathlib import Path
+
+    from .stems import analyze_stems, format_stems_report
+
+    r = analyze_stems(args.folder, args.roles, args.exclude)
+    print(format_stems_report(r, args.top))
+    if args.json:
+        Path(args.json).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.json).write_text(json.dumps(r, indent=2, ensure_ascii=False, default=float), encoding="utf-8")
 
 
 def _roles(folder: str, roles_yaml: str | None) -> None:
