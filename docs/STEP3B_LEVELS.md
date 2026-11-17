@@ -43,4 +43,18 @@ un test ; toute correction est proposée à l'utilisateur et ajoutée en annexe 
 
 ## Annexes
 
-Aucune.
+### B1 (17/11/2026) : L4 ÉCHOUE (78,6 % pour un seuil de 80 %) — correction PROPOSÉE, non appliquée
+
+Résultats : L1, L2, L3, L5 à L10 passent. L4 donne 78,6 % (kick), 14,1 % (basse), 7,3 % (pad).
+
+Cause : la définition figée (§1) attribue la crête à chaque piste qui sonne au même instant,
+au prorata de son amplitude. Dans le signal de L4, la basse (crête 0,126) s'ajoute au kick
+(0,708) : même en phase parfaite, la part du kick plafonne à 85 % ; en moyenne 78,6 %. Le
+seuil de 80 % était une estimation trop serrée, faite sans ce calcul. Ce n'est pas un défaut
+d'implémentation : la basse contribue réellement à la crête écrêtée.
+
+Méthode alternative testée (contribution marginale : la réduction disparaît-elle si l'on
+retire la piste ?) : 57,7 % pour le kick, moins bonne. Écartée.
+
+Correction proposée à l'utilisateur : seuil L4 abaissé à 75 %, avec la justification
+ci-dessus. **En attente de sa décision** ; d'ici là, le test reste en échec.

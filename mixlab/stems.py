@@ -16,7 +16,11 @@ from scipy.signal import correlate
 from . import __version__
 from .audio import load
 from .features import bark_energies
+from .levels import (gain_staging, importance_weight, master_chain_attribution, stem_levels,
+                     third_octave_contributors)
 from .masking import analyze_masking, envelope_correlation
+from .measures.balance import compare_to_references
+from .measures.spectrum import third_octave_spectrum
 from .measures.loudness import measure_loudness
 from .roles import AUDIO_EXT, detect_role, load_roles_yaml
 
@@ -29,6 +33,9 @@ ALIGN_WINDOW_S = 10.0
 def display_name(filename: str) -> str:
     """Nom lisible : retire le préfixe de projet FL et les remplissages du nom de sample."""
     stem = Path(filename).stem
+    tail = re.search(r"(Insert_\d+|Master)$", stem)
+    if tail:
+        return tail.group(1).replace("_", " ")
     parts = [q for q in re.split(r"_{2,}", stem) if q.strip("_- ")]
     if len(parts) >= 3:
         kind = parts[-2].replace("_", " ").strip(" -")
@@ -79,7 +86,7 @@ def align(master: np.ndarray, stem_sum: np.ndarray, fs: int) -> dict:
 
 
 def analyze_stems(folder: str | os.PathLike, roles_yaml: str | os.PathLike | None = None,
-                  exclude: list[str] = ()) -> dict:
+                  exclude: list[str] = (), refs: list[str | os.PathLike] = ()) -> dict:
     folder = Path(folder)
     overrides = load_roles_yaml(roles_yaml if roles_yaml is not None else folder / "roles.yaml")
     files = sorted(p for p in folder.iterdir() if p.suffix.lower() in AUDIO_EXT and p.name not in exclude)
@@ -117,13 +124,43 @@ def analyze_stems(folder: str | os.PathLike, roles_yaml: str | os.PathLike | Non
            "excluded_files": list(exclude)}
 
     stem_sum = sum(it["x"] for it in used)
-    if masters:
-        out["master_alignment"] = {**align(masters[0]["x"], stem_sum, fs), "master": masters[0]["path"].name}
-
-    energies = [bark_energies(it["x"], fs)[0] for it in used]
     names = [display_name(it["path"].name) for it in used]
     roles = [it["role"].role for it in used]
-    out["masking"] = analyze_masking(energies, names, roles)
+    signals = [it["x"] for it in used]
+    master = masters[0]["x"] if masters else None
+
+    out["levels"] = stem_levels(signals, names, roles, fs)
+    out["gain_staging"] = gain_staging(stem_sum, master, fs)
+    if master is not None:
+        al = align(master, stem_sum, fs)
+        out["master_alignment"] = {**al, "master": masters[0]["path"].name}
+        lag = al["lag_samples"]
+        if lag >= 0:
+            m_al, st_al = master[lag:], [x[: len(x) - lag] for x in signals]
+        else:
+            m_al, st_al = master[: len(master) + lag], [x[-lag:] for x in signals]
+        attr = master_chain_attribution(st_al, names, m_al, fs)
+        attr.pop("reduction_db_per_frame", None)
+        out["master_chain"] = attr
+        if refs:
+            m_lufs = measure_loudness(master, fs).integrated
+            ref_items = []
+            for rp in refs:
+                rx, rinfo = load(rp)
+                ref_items.append((Path(rp).stem, third_octave_spectrum(rx, rinfo.sample_rate),
+                                  measure_loudness(rx, rinfo.sample_rate).integrated))
+            comp = compare_to_references((third_octave_spectrum(master, fs), m_lufs), ref_items)
+            flagged = [b for b in comp["bands"] if abs(b["delta_db"]) >= 3]
+            contrib = third_octave_contributors(signals, names, fs, [b["band_hz"] for b in flagged])
+            out["bands_vs_refs"] = {"references": comp["references"], "normalization": comp["normalization"],
+                                    "bands": [{**b, "contributors": contrib.get(b["band_hz"], [])} for b in flagged]}
+
+    m_max = {r["name"]: (r["momentary_max_lufs"] if r["momentary_max_lufs"] is not None else -np.inf)
+             for r in out["levels"]}
+    loudest = max(m_max.values())
+    weights = [importance_weight(m_max[nm], loudest) for nm in names]
+    energies = [bark_energies(x, fs)[0] for x in signals]
+    out["masking"] = analyze_masking(energies, names, roles, weights)
 
     kicks = [k for k, r in enumerate(roles) if r == "KICK"]
     basses = [k for k, r in enumerate(roles) if r == "808"]
@@ -142,12 +179,37 @@ def format_stems_report(r: dict, top: int = 3) -> str:
                  + ("" if s["status"] == "analysé" else f"  [{s['status']}]"))
     if r["excluded_files"]:
         L.append(f"  Exclus à ta demande : {', '.join(r['excluded_files'])}")
+    g = r["gain_staging"]
+    L += ["", "GAIN STAGING",
+          f"  Somme des stems avant le Master : crête {g['sum_peak_dbfs']:+.1f} dBFS, true-peak {g['sum_true_peak_dbtp']:+.1f} dBTP,"
+          f" facteur de crête {g['sum_crest_db']:.1f} dB, {g['sum_lufs']:.1f} LUFS",
+          f"  Pour que la somme culmine à {g['target_sum_peak_dbfs']:.0f} dBFS : {g['trim_to_target_db']:+.1f} dB sur toutes les pistes"]
+    if "master_crest_db" in g:
+        L.append(f"  Master : crête {g['master_peak_dbfs']:+.1f} dBFS, true-peak {g['master_true_peak_dbtp']:+.1f} dBTP, "
+                 f"facteur de crête {g['master_crest_db']:.1f} dB, {g['master_lufs']:.1f} LUFS")
+        L.append(f"  La chaîne Master retire {g['crest_lost_db']:.1f} dB de facteur de crête pour {g['loudness_gained_lu']:+.1f} LU de loudness")
     if "master_alignment" in r:
-        a = r["master_alignment"]
-        L += ["", "STEMS / MASTER",
-              f"  Décalage du Master : {a['lag_samples']} échantillons ({a['lag_ms']} ms) ; "
-              f"après alignement, corrélation {a['correlation']}, écart {a['difference_db']} dB "
-              "(effet de la chaîne Master ; attribution non analysée à ce stade)"]
+        a, c = r["master_alignment"], r.get("master_chain", {})
+        L += ["", "CHAÎNE MASTER (limiteur, clipper) : QUI LA FAIT TRAVAILLER",
+              f"  Décalage {a['lag_samples']} échantillons ({a['lag_ms']} ms), corrélation après alignement {a['correlation']}"]
+        if c.get("makeup_gain_db") is not None:
+            L.append(f"  Gain appliqué hors réduction : {c['makeup_gain_db']:+.1f} dB · réduction > 1 dB sur "
+                     f"{c['reduction_events_pct']:.0f} % du temps, > 3 dB sur {c['reduction_over_3db_pct']:.0f} %, max {c['max_reduction_db']:.1f} dB")
+            L.append("  Part de la réduction déclenchée par chaque piste :")
+            for d in c["attribution_pct"][:6]:
+                L.append(f"    {d['share_pct']:5.1f} %  {d['name']}")
+    L += ["", "NIVEAUX DES STEMS (part de l'énergie de chaque bande)",
+          "  LUFS   M max  Crête    Sub   Basses  Bas-méd.  Piste"]
+    for v in sorted(r["levels"], key=lambda v: -(v["integrated_lufs"] or -99)):
+        b = v["band_share_pct"]
+        f = lambda x: "  -  " if x is None else f"{x:4.0f} %"  # noqa: E731
+        L.append(f"  {v['integrated_lufs']:6.1f} {v['momentary_max_lufs']:6.1f} {v['sample_peak_dbfs']:+5.1f}  {f(b['sub'])} {f(b['bass'])}  {f(b['lowmid'])}   {v['role']:<6} {v['name']}")
+    if r.get("bands_vs_refs"):
+        br = r["bands_vs_refs"]
+        L += ["", f"BANDES À 3 dB OU PLUS DES RÉFÉRENCES ({br['normalization']}) ET QUI LES REMPLIT"]
+        for b in br["bands"]:
+            who = ", ".join(f"{c['name']} {c['share_pct']:.0f} %" for c in b["contributors"])
+            L.append(f"  {str(b['band_hz']):>6} Hz {b['delta_db']:+5.1f} dB : {who}")
     m = r["masking"]
     L += ["", "MASQUAGE GLOBAL (chaque stem face à tous les autres)",
           "  % d'énergie utile masquée · SMR médian · bandes concernées"]
@@ -155,11 +217,12 @@ def format_stems_report(r: dict, top: int = 3) -> str:
         smr = "n/a" if s["median_smr_db"] is None else f"{s['median_smr_db']:+.1f} dB"
         L.append(f"  {s['energy_masked_pct']:5.1f} %  {smr:>9}  {s['role']:<6} {s['name']:<32} "
                  f"{', '.join(s['masked_bands'][:4])}")
-    L += ["", f"CONFLITS PRINCIPAUX (paires, un seul masqueur à la fois) — top {top}"]
+    L += ["", f"CONFLITS PRINCIPAUX (paires, un seul masqueur, classés par % masqué × importance de la piste masquée) — top {top}"]
     for k, c in enumerate(m["conflicts"][:top], 1):
         smr = "n/a" if c["median_smr_overlap_db"] is None else f"{c['median_smr_overlap_db']:+.1f} dB"
         L.append(f"  {k}. {c['masker']} ({c['masker_role']}) masque {c['masked']} ({c['masked_role']}) : "
-                 f"{c['energy_masked_pct']:.0f} % de son énergie utile (score), surtout {', '.join(c['bands'][:3])}")
+                 f"{c['energy_masked_pct']:.0f} % de son énergie utile × importance {c['victim_weight']:.2f} = score {c['score']:.1f}, "
+                 f"surtout {', '.join(c['bands'][:3])}")
         L.append(f"     jouent ensemble {c['overlap_pct']:.0f} % du temps de la cible · SMR médian quand les deux jouent {smr}"
                  f" · sens inverse {c['reverse_pct']:.0f} %")
     if r["kick_bass"]:

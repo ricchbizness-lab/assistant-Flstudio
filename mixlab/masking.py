@@ -124,8 +124,10 @@ def _top_bands(band_energy: np.ndarray, share: float = 0.8) -> list[str]:
     return [BAND_LABELS[b] for b in sorted(out)]
 
 
-def analyze_masking(energies: list[np.ndarray], names: list[str], roles: list[str]) -> dict:
-    """energies : une matrice (T, C, 24) par stem, mêmes T et C."""
+def analyze_masking(energies: list[np.ndarray], names: list[str], roles: list[str],
+                    weights: list[float] | None = None) -> dict:
+    """energies : une matrice (T, C, 24) par stem, mêmes T et C.
+    weights : poids d'importance de chaque stem (STEP3B §2) ; classement = % masqué × poids de la cible."""
     n = len(energies)
     e = np.stack(energies)                                            # (S, T, C, B)
     rel = [relevance(e[i]) for i in range(n)]
@@ -152,15 +154,19 @@ def analyze_masking(energies: list[np.ndarray], names: list[str], roles: list[st
             detail[(i, j)] = mask_target(e[i], thr_each[j], rel[i], rel[j][0])
             pair[i, j] = detail[(i, j)].energy_masked_pct
 
+    w = np.ones(n) if weights is None else np.asarray(weights, dtype=float)
+    weighted = pair * w[:, None]
     conflicts = []
     for i in range(n):
         for j in range(i + 1, n):
-            victim, masker = (i, j) if pair[i, j] >= pair[j, i] else (j, i)
+            victim, masker = (i, j) if weighted[i, j] >= weighted[j, i] else (j, i)
             d = detail[(victim, masker)]
             if pair[victim, masker] <= 0:
                 continue
             conflicts.append({
-                "score": round(float(pair[victim, masker]), 1),
+                "score": round(float(weighted[victim, masker]), 2),
+                "raw_score": round(float(pair[victim, masker]), 1),
+                "victim_weight": round(float(w[victim]), 3),
                 "masked": names[victim], "masked_role": roles[victim],
                 "masker": names[masker], "masker_role": roles[masker],
                 "energy_masked_pct": round(float(pair[victim, masker]), 1),

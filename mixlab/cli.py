@@ -51,6 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     st.add_argument("--roles", help="Fichier roles.yaml (défaut : <dossier>/roles.yaml)")
     st.add_argument("--exclude", action="append", default=[], help="Nom de fichier à ignorer (répétable)")
     st.add_argument("--top", type=int, default=3, help="Nombre de conflits affichés (défaut 3)")
+    st.add_argument("--ref", action="append", default=[], help="Référence pour comparer le Master (répétable)")
     st.add_argument("--json", help="Fichier JSON de sortie")
 
     args = p.parse_args(argv)
@@ -121,7 +122,8 @@ def _stems(args) -> None:
 
     from .stems import analyze_stems, format_stems_report
 
-    r = analyze_stems(args.folder, args.roles, args.exclude)
+    refs = [make_working_copy(x, "data/work").path for x in args.ref]
+    r = analyze_stems(args.folder, args.roles, args.exclude, refs)
     print(format_stems_report(r, args.top))
     if args.json:
         Path(args.json).parent.mkdir(parents=True, exist_ok=True)
