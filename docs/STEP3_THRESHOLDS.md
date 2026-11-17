@@ -119,3 +119,9 @@ Enseignements :
 Suite prévue (§3) : recalibrage des paramètres du §1 (pondération du score par l'importance
 de la cible), seuils du §2 inchangés, puis nouveau test sur un autre extrait. Le choix de
 la suite est soumis à l'utilisateur.
+
+### A4 (17/11/2026) : recalibration du score de classement (validée par l'utilisateur, option B)
+
+Définie dans docs/STEP3B_LEVELS.md §2 avant implémentation : score = % d'énergie utile
+masquée × poids d'importance de la cible (loudness momentané max relatif au stem le plus
+fort). Paramètres du §1 et seuils du §2 inchangés. Nouveau test d'écoute sur un autre extrait.
