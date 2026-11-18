@@ -33,7 +33,7 @@ un test ; toute correction est proposée à l'utilisateur et ajoutée en annexe 
 | L1 | Somme de stems de crête +6,0 dBFS | correction globale = -12,0 dB ± 0,01 |
 | L2 | Master = 0,5 × somme (gain seul) | facteur de crête perdu ≤ 0,1 dB ; loudness gagné = -6,02 ± 0,05 LU |
 | L3 | Master = écrêtage dur à -1 dBFS de 1,5 × somme (kick, pad, basse) | G estimé = +3,52 dB ± 0,5 |
-| L4 | Même signal que L3, seul le kick dépasse | part du kick dans la réduction ≥ 80 % |
+| L4 | Même signal que L3, seul le kick dépasse | part du kick dans la réduction ≥ 80 % → **75 %** (annexe B1) |
 | L5 | Master = gain seul (0,8 × somme) | trames avec réduction > 1 dB ≤ 1 % |
 | L6 | Limiteur simulé (attaque instantanée, relâchement 50 ms, seuil 0,5), 10 s | erreur absolue médiane de la réduction estimée ≤ 1 dB sur les trames où la vraie réduction ≥ 2 dB |
 | L7 | Stem A = bruit rose < 300 Hz, stem B = bruit rose > 1 kHz, même niveau | contribution de A dans le tiers d'octave 250 Hz ≥ 95 % ; de B à 2 kHz ≥ 95 % |
@@ -57,4 +57,5 @@ Méthode alternative testée (contribution marginale : la réduction disparaît-
 retire la piste ?) : 57,7 % pour le kick, moins bonne. Écartée.
 
 Correction proposée à l'utilisateur : seuil L4 abaissé à 75 %, avec la justification
-ci-dessus. **En attente de sa décision** ; d'ici là, le test reste en échec.
+ci-dessus. **Accepté par l'utilisateur le 18/11/2026 (option A)** : seuil L4 = 75 %. La valeur
+d'origine (80 %) reste consignée ici. Le signal de test n'est pas modifié.

@@ -60,7 +60,7 @@ def test_l3_l4_clipper_makeup_and_attribution():
     r = master_chain_attribution(stems, names, master, FS)
     assert r["makeup_gain_db"] == pytest.approx(3.52, abs=0.5)
     kick = next(d for d in r["attribution_pct"] if d["name"] == "kick")
-    assert kick["share_pct"] >= 80
+    assert kick["share_pct"] >= 75          # seuil corrigé (annexe B1, accord de l'utilisateur le 18/11/2026)
 
 
 # L5
