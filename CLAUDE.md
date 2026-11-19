@@ -18,3 +18,6 @@
 - Étape 3B (option B validée) : conception et seuils figés (commit 054cc4f, docs/STEP3B_LEVELS.md), `mixlab/levels.py` (niveaux, gain staging, attribution de la réduction du Master, contributeurs par tiers d'octave), score de masquage pondéré par l'importance (annexe A4). L4 : seuil corrigé de 80 à 75 % avec l'accord de l'utilisateur (annexe B1), test vert. Insert 1 = mélodie (LEAD). Nouveau test d'écoute à faire sur un AUTRE extrait.
 - Données audio : la release privée est abandonnée. L'utilisateur envoie un extrait de 20-30 s (stems + Master) dans le chat avant l'étape 3. Références dans `data/refs/` (16 bits / 48 kHz) ; exports réels en 32 bits flottant / 44,1 kHz.
 - Rapports : toujours afficher fréquence et profondeur de chaque fichier (`AudioInfo.label`).
+
+## À rappeler à l'utilisateur
+- Quand le premier projet (extrait test-1 : gain staging, corrections, nouveau test d'écoute) sera terminé : lui rappeler le module « simulation d'écoute » (téléphone, AirPods, voiture, club). Proposition déjà faite le 18/11/2026 : option C (rendus audio puis mesures d'audibilité par piste, ISO 226 selon le volume d'écoute), seuils figés avant code. Questions en suspens : modèle d'AirPods, téléphone visé, matériel d'écoute des rendus.
